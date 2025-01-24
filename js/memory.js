@@ -3,6 +3,7 @@ class MemorySystem {
         // 艾宾浩斯记忆间隔（单位：小时）
         this.intervals = [0, 24, 72, 168, 360, 720];
         this.words = [];
+        this.todayTarget = 0; // 今日目标单词数
     }
 
     // 初始化词库
@@ -12,6 +13,7 @@ class MemorySystem {
             stage: 0,  // 当前记忆阶段
             nextReview: new Date().getTime()  // 下次复习时间
         }));
+        this.updateTodayTarget(); // 更新今日目标
         this.saveToLocalStorage();
     }
 
@@ -85,51 +87,62 @@ class MemorySystem {
         };
     }
 
+    // 获取今天需要复习的单词总数
+    getTodayTotalWords() {
+        return this.todayTarget;
+    }
+
+    // 更新今日目标单词数
+    updateTodayTarget() {
+        const now = new Date().getTime();
+        this.todayTarget = this.words.filter(word => word.nextReview <= now).length;
+    }
+
     // 保存到本地存储
     saveToLocalStorage() {
-        localStorage.setItem('wordData', JSON.stringify(this.words));
+        const data = {
+            words: this.words,
+            todayTarget: this.todayTarget
+        };
+        localStorage.setItem('wordData', JSON.stringify(data));
     }
 
     // 从本地存储加载
     loadFromLocalStorage() {
-        const savedData = localStorage.getItem('wordData');
-        if (savedData) {
-            this.words = JSON.parse(savedData);
-            return true;
+        const data = localStorage.getItem('wordData');
+        if (data) {
+            try {
+                const parsed = JSON.parse(data);
+                if (Array.isArray(parsed)) {
+                    // 兼容旧版本的数据格式
+                    this.words = parsed;
+                    this.updateTodayTarget();
+                } else {
+                    // 新版本的数据格式
+                    this.words = parsed.words || [];
+                    this.todayTarget = parsed.todayTarget || 0;
+                }
+                return true;
+            } catch (e) {
+                console.error('加载数据失败:', e);
+                return false;
+            }
         }
         return false;
     }
 
     // 重置今日学习进度
     resetTodayProgress() {
-        const today = new Date().toDateString();
-        const now = new Date().getTime();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         
-        // 找出今天学习过的单词
-        const todayWords = this.words.filter(word => 
-            word.lastReviewed && new Date(word.lastReviewed).toDateString() === today
-        );
-        
-        // 如果今天有学习记录，只重置今天的单词
-        // 如果今天没有学习记录，重置所有单词
-        const wordsToReset = todayWords.length > 0 ? todayWords : this.words;
-        
-        // 重置选定的单词
-        wordsToReset.forEach(word => {
-            const index = this.words.findIndex(w => 
-                w.chinese === word.chinese && w.latin === word.latin
-            );
-            if (index !== -1) {
-                this.words[index].lastReviewed = null;  // 清除上次复习时间
-                this.words[index].nextReview = now;     // 设置为当前时间，使其立即可复习
-                this.words[index].stage = 0;            // 重置到初始阶段
-                this.words[index].correctCount = 0;     // 重置正确计数
-                this.words[index].reviewCount = 0;      // 重置复习计数
-            }
+        this.words.forEach(word => {
+            delete word.lastReviewed;
+            delete word.correctCount;
+            delete word.reviewCount;
         });
-        
-        // 保存到本地存储
+
+        this.updateTodayTarget(); // 重置时更新今日目标
         this.saveToLocalStorage();
-        console.log(`学习进度已重置，${wordsToReset.length}个单词已设置为可复习状态`);
     }
 }

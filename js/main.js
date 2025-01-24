@@ -255,16 +255,22 @@ async function handleFileUpload(event) {
 // 更新进度条
 function updateProgress() {
     const stats = memorySystem.getTodayStats();
-    currentProgress = Math.min((stats.count / totalWords) * 100, 100);
+    const todayTotal = memorySystem.getTodayTotalWords();
+    currentProgress = todayTotal > 0 ? Math.min((stats.count / todayTotal) * 100, 100) : 0;
     elements.progressFill.style.width = `${currentProgress}%`;
+    elements.todayCount.textContent = `${stats.count}/${todayTotal}`;
 }
 
 // 显示下一个问题
 function showNextQuestion() {
     currentWord = memorySystem.getNextWord();
+    
     if (currentWord) {
         showQuestion(currentWord);
-        elements.answer.focus();
+        // 启用输入框和提交按钮
+        elements.answer.disabled = false;
+        elements.submit.disabled = false;
+        elements.answer.focus(); // 自动聚焦到输入框
     } else {
         showCompletionMessage();
     }
@@ -287,6 +293,12 @@ function checkAnswer() {
     if (!currentWord) return;
 
     const userAnswer = elements.answer.value.trim();
+    if (!userAnswer) return;
+
+    // 禁用输入框和提交按钮
+    elements.answer.disabled = true;
+    elements.submit.disabled = true;
+
     let isCorrect = false;
 
     // 统一处理空格和大小写
@@ -321,7 +333,7 @@ function checkAnswer() {
 // 更新统计信息
 function updateStats() {
     const stats = memorySystem.getTodayStats();
-    elements.todayCount.textContent = stats.count;
+    elements.todayCount.textContent = `${stats.count}/${memorySystem.getTodayTotalWords()}`;
     elements.accuracy.textContent = stats.accuracy;
 }
 
@@ -357,12 +369,19 @@ function restartLearning() {
     memorySystem.resetTodayProgress();
     
     // 重置界面
-    elements.answer.style.display = 'block';
-    elements.submit.style.display = 'block';
     elements.answer.value = '';
     elements.todayCount.textContent = '0';
     elements.accuracy.textContent = '0';
     elements.progressFill.style.width = '0%';
+    elements.result.textContent = '';
+    elements.result.className = 'result';
+    elements.next.style.display = 'none';
+    
+    // 启用输入框和提交按钮
+    elements.answer.disabled = false;
+    elements.submit.disabled = false;
+    elements.answer.style.display = 'block';
+    elements.submit.style.display = 'block';
     
     // 淡出当前内容
     elements.question.style.opacity = '0';
@@ -373,6 +392,7 @@ function restartLearning() {
         showNextQuestion();
         elements.question.style.opacity = '1';
         elements.answer.style.opacity = '1';
+        elements.answer.focus(); // 自动聚焦到输入框
     }, 300);
 }
 

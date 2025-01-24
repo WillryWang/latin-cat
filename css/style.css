@@ -32,18 +32,38 @@ body {
 
 /* 进度条 */
 .progress-bar {
-    height: 4px;
     background: #e5e5e5;
     margin-bottom: 20px;
-    border-radius: 2px;
+    border-radius: 6px;
+    height: 12px; /* 增加高度 */
+    overflow: hidden;
 }
 
 .progress-fill {
     height: 100%;
     background: var(--primary-color);
-    border-radius: 2px;
+    border-radius: 6px;
     transition: width 0.5s ease-in-out;
     width: 0%;
+}
+
+/* 进度条容器 */
+.progress-container {
+    width: 100%;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    margin: 10px 0;
+    height: 12px; /* 增加高度 */
+    overflow: hidden;
+}
+
+/* 进度条填充部分 */
+.progress-fill {
+    width: 0%;
+    height: 100%;
+    background-color: #4CAF50;
+    transition: width 0.3s ease;
+    border-radius: 5px;
 }
 
 /* 欢迎页面 */
