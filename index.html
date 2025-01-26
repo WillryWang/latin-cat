@@ -3,138 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Latin Cat</title>
+    <title>Latin Cat - 植物拉丁文单词速记</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- 启动页面 -->
-    <div id="splashScreen" class="splash-screen">
-        <img src="img/splash.png" alt="欢迎使用" class="splash-image">
-    </div>
-
-    <div class="app-container">
-        <!-- 顶部进度条 -->
-        <div class="progress-bar">
-            <div class="progress-fill"></div>
+    <div class="landing-page">
+        <!-- 启动页面 -->
+        <div id="splashScreen" class="splash-screen">
+            <img src="img/splash.png" alt="欢迎使用" class="splash-image">
         </div>
 
-        <!-- 导入区域 -->
-        <div class="import-section" id="importSection">
-            <div class="welcome-card">
-                <h1>Latin Cat - 像玩游戏一样学习植物拉丁文</h1>
-                <div class="file-upload-area">
-                    <input type="file" id="csvFile" accept=".csv" class="file-input">
-                    <label for="csvFile" class="file-label">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <span>选择CSV文件</span>
-                    </label>
-                    <p class="hint">请上传CSV格式的词库文件，每行包含：中文名称,拉丁文名称</p>
-                    <p class="hint">示例：薰衣草,Lavandula angustifolia</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 答题区域 -->
-        <div class="quiz-section" style="display: none;">
-            <!-- 顶部信息栏 -->
-            <div class="top-bar">
-                <div class="stats">
-                    <div class="stat-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>今日完成：<span id="todayCount">0</span></span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-star"></i>
-                        <span>正确率：<span id="accuracy">0</span>%</span>
-                    </div>
-                </div>
-                <div class="mode-selection">
-                    <button class="mode-btn active" data-mode="cn2latin">
-                        <i class="fas fa-language"></i> 中译拉
-                    </button>
-                    <button class="mode-btn" data-mode="latin2cn">
-                        <i class="fas fa-globe"></i> 拉译中
-                    </button>
-                    <div class="settings-container">
-                        <button class="settings-btn" id="settingsBtn">
-                            <i class="fas fa-cog"></i>
-                        </button>
-                        <div class="settings-menu" id="settingsMenu">
-                            <div class="settings-menu-item" id="importNewBtn">
-                                <i class="fas fa-file-import"></i>
-                                导入新词库
+        <div class="welcome-container">
+            <h1>Latin Cat</h1>
+            <p class="subtitle">像玩游戏一样学习植物拉丁文</p>
+            
+            <div class="mode-selection">
+                <h2>选择学习模式</h2>
+                <div class="mode-buttons">
+                    <button class="mode-btn" id="zh2latin">
+                        <div class="mode-content">
+                            <div class="mode-icon">
+                                <i class="fas fa-book"></i>
                             </div>
-                            <div class="settings-menu-item" id="endLearningBtn">
-                                <i class="fas fa-flag-checkered"></i>
-                                结束学习
-                            </div>
-                            <div class="settings-menu-item danger" id="resetDataBtn">
-                                <i class="fas fa-trash-alt"></i>
-                                重置所有数据
+                            <div class="mode-info">
+                                <span class="mode-title">中文 → 拉丁文</span>
+                                <small class="mode-desc">根据中文名回忆拉丁文名称</small>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
+                        <div class="mode-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="zh2latinProgress" style="width: 0%"></div>
+                            </div>
+                            <span class="progress-text">完成度：<span id="zh2latinProgressText">0%</span></span>
+                        </div>
+                    </button>
 
-            <!-- 问题卡片 -->
-            <div class="question-card">
-                <div class="question-area">
-                    <h3>请回答：</h3>
-                    <p id="question" class="question"></p>
-                    <div class="answer-box">
-                        <input type="text" id="answer" class="answer-input" placeholder="请输入答案">
-                        <button id="submit" class="submit-btn">
-                            <i class="fas fa-check"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- 结果反馈 -->
-                <div class="result-area">
-                    <div id="result" class="result"></div>
-                    <button id="next" class="next-btn" style="display: none;">
-                        <span>继续</span>
-                        <i class="fas fa-arrow-right"></i>
+                    <button class="mode-btn" id="latin2zh">
+                        <div class="mode-content">
+                            <div class="mode-icon">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <div class="mode-info">
+                                <span class="mode-title">拉丁文 → 中文</span>
+                                <small class="mode-desc">根据拉丁文名回忆中文名称</small>
+                            </div>
+                        </div>
+                        <div class="mode-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="latin2zhProgress" style="width: 0%"></div>
+                            </div>
+                            <span class="progress-text">完成度：<span id="latin2zhProgressText">0%</span></span>
+                        </div>
                     </button>
                 </div>
             </div>
-
-            <!-- 学习提示 -->
-            <div class="learning-tips">
-                <i class="fas fa-lightbulb"></i>
-                <p>提示：输入拉丁文时不区分大小写，空格数量也可以灵活处理</p>
-            </div>
         </div>
     </div>
 
-    <!-- 确认对话框 -->
-    <div class="confirm-dialog" id="confirmDialog">
-        <h3>确认重置</h3>
-        <p>此操作将清除所有导入的词库和学习记录，且不可恢复。确定要继续吗？</p>
-        <div class="confirm-dialog-buttons">
-            <button class="confirm-dialog-btn cancel" id="cancelReset">取消</button>
-            <button class="confirm-dialog-btn confirm" id="confirmReset">确认重置</button>
-        </div>
-    </div>
-
-    <!-- 结束学习确认对话框 -->
-    <div class="confirm-dialog" id="endLearningDialog">
-        <h3>结束今日学习</h3>
-        <p>确定要结束今天的学习吗？当前进度将会保存。</p>
-        <div class="confirm-dialog-buttons">
-            <button class="confirm-dialog-btn cancel" id="cancelEndLearning">继续学习</button>
-            <button class="confirm-dialog-btn confirm blue" id="confirmEndLearning">结束学习</button>
-        </div>
-    </div>
-
-    <!-- 遮罩层 -->
-    <div class="overlay" id="overlay"></div>
-
-    <!-- 加载所有脚本 -->
-    <script src="js/csvParser.js"></script>
-    <script src="js/memory.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/landing.js"></script>
 </body>
 </html>
