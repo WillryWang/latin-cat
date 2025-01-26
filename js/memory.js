@@ -196,11 +196,16 @@ class MemorySystem {
             const todayEnd = new Date();
             todayEnd.setHours(23, 59, 59, 999);
             
-            // 获取今天复习过的单词
-            const todayWords = this.words.filter(w => 
-                w.lastReviewed >= todayStart.getTime() && 
-                w.lastReviewed <= todayEnd.getTime()
-            );
+            // 使用Set来存储今天学习过的唯一单词
+            const todayWordsSet = new Set();
+            const todayWords = this.words.filter(w => {
+                if (w.lastReviewed >= todayStart.getTime() && 
+                    w.lastReviewed <= todayEnd.getTime()) {
+                    todayWordsSet.add(w.latin); // 使用拉丁文作为唯一标识
+                    return true;
+                }
+                return false;
+            });
             
             // 计算正确率
             let totalCorrect = 0;
@@ -215,13 +220,14 @@ class MemorySystem {
                 : 0;
             
             console.log('统计数据:', {
+                uniqueWordsToday: todayWordsSet.size,
                 todayWords: todayWords.length,
                 totalCorrect,
                 accuracy
             });
             
             return {
-                count: todayWords.length,
+                count: todayWordsSet.size, // 返回唯一单词数
                 accuracy: accuracy
             };
         } catch (error) {
@@ -240,7 +246,11 @@ class MemorySystem {
         console.log('更新今日目标...');
         try {
             const now = new Date().getTime();
-            this.todayTarget = this.words.filter(word => word.nextReview <= now + 24 * 60 * 60 * 1000).length;
+            // 计算今日目标：包括未学习的单词和需要复习的单词
+            this.todayTarget = this.words.filter(word => 
+                !word.lastReviewed || // 未学习的单词
+                word.nextReview <= now + 24 * 60 * 60 * 1000 // 今天需要复习的单词
+            ).length;
             console.log('今日目标更新为:', this.todayTarget);
             return true;
         } catch (error) {

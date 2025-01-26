@@ -18,8 +18,7 @@ let elements = {
     result: document.getElementById('result'),
     todayCount: document.getElementById('todayCount'),
     accuracy: document.getElementById('accuracy'),
-    progressBar: document.getElementById('progressBar'),
-    progressFill: document.getElementById('progressBar')
+    progressBar: document.getElementById('progressBar')
 };
 
 // 检查所有必要的 DOM 元素是否存在
@@ -81,6 +80,13 @@ async function initializeApp() {
         }
     };
 
+    // 监听输入框内容变化，控制提交按钮状态
+    elements.answer.oninput = function() {
+        elements.submit.disabled = !this.value.trim();
+    };
+    // 初始状态下禁用提交按钮
+    elements.submit.disabled = true;
+
     // 尝试从本地存储加载数据
     try {
         console.log('尝试从本地存储加载词库数据...');
@@ -117,7 +123,13 @@ async function initializeApp() {
             elements.todayCount.textContent = todayStats.count;
             elements.accuracy.textContent = todayStats.accuracy;
             
-            // 显示答题界面
+            // 更新今日目标
+            memorySystem.updateTodayTarget();
+            
+            // 更新进度显示
+            updateProgress('页面初始化');
+            
+            // 显示答题区域
             elements.importSection.style.display = 'none';
             elements.quizSection.style.display = 'block';
             
@@ -255,7 +267,7 @@ function initializeSettings() {
                     // 重置界面
                     elements.todayCount.textContent = '0';
                     elements.accuracy.textContent = '0';
-                    elements.progressFill.style.width = '0%';
+                    elements.progressBar.style.width = '0%';
                     
                     // 显示导入区域
                     elements.importSection.style.display = 'block';
@@ -338,21 +350,19 @@ async function handleFileUpload(event) {
             return;
         }
 
-        // 保存词库数据到本地存储
+        // 初始化记忆系统
+        memorySystem.initializeWords(words);
+        
+        // 更新今日目标
+        memorySystem.updateTodayTarget();
+        
+        // 更新进度显示
+        updateProgress('文件上传');
+        
+        // 保存词库到本地存储
         localStorage.setItem('words', JSON.stringify(words));
         console.log('词库数据已保存到本地存储');
 
-        // 初始化记忆系统
-        totalWords = words.length;
-        if (!memorySystem.initializeWords(words)) {
-            throw new Error('初始化记忆系统失败');
-        }
-
-        // 更新界面显示
-        const stats = memorySystem.getTodayStats();
-        elements.todayCount.textContent = stats.count;
-        elements.accuracy.textContent = stats.accuracy;
-        
         // 切换到答题界面
         elements.importSection.style.display = 'none';
         elements.quizSection.style.display = 'block';
@@ -385,6 +395,7 @@ async function showNextWord() {
         elements.answer.disabled = false;
         elements.answer.focus();
         elements.submit.style.display = 'flex';
+        elements.submit.disabled = true; // 重置提交按钮为禁用状态
         elements.next.style.display = 'none';
         elements.result.style.display = 'none';
 
@@ -439,25 +450,20 @@ function checkAnswer() {
         console.log('答案是否正确:', isCorrect);
 
         // 更新记忆系统
-        if (!memorySystem.updateWordStatus(currentWord, isCorrect)) {
-            console.error('更新单词状态失败');
-            alert('保存学习记录失败，请刷新页面重试');
-            return;
-        }
-
-        // 更新界面显示
-        elements.result.style.display = 'block';
-        elements.result.className = 'result ' + (isCorrect ? 'correct' : 'incorrect');
-        elements.result.innerHTML = isCorrect
-            ? '<i class="fas fa-check-circle"></i> 回答正确！'
-            : `<i class="fas fa-times-circle"></i> 正确答案是：${correctAnswer}`;
-
+        memorySystem.updateWordStatus(currentWord, isCorrect);
+        
+        // 更新今日目标
+        memorySystem.updateTodayTarget();
+        
+        // 更新进度显示
+        updateProgress('答题完成');
+        
         // 更新统计数据显示
         const stats = memorySystem.getTodayStats();
         console.log('获取到的统计数据:', stats);
         elements.todayCount.textContent = stats.count;
         elements.accuracy.textContent = stats.accuracy;
-
+        
         // 更新按钮状态
         elements.submit.style.display = 'none';
         elements.next.style.display = 'flex';
@@ -471,6 +477,21 @@ function checkAnswer() {
         console.error('检查答案时发生错误:', error);
         alert('系统出现错误，请刷新页面重试');
     }
+}
+
+// 更新进度显示
+function updateProgress(source = '') {
+    // 获取最新统计数据
+    const stats = memorySystem.getTodayStats();
+    elements.todayCount.textContent = stats.count;
+    elements.accuracy.textContent = stats.accuracy;
+    
+    // 更新进度条
+    const totalWords = memorySystem.getTodayTotalWords();
+    console.log(`${source} - 今日目标单词数:`, totalWords);
+    const progress = totalWords > 0 ? Math.round((stats.count / totalWords) * 100) : 0;
+    console.log(`${source} - 当前进度:`, progress + '%');
+    elements.progressBar.style.width = progress + '%';
 }
 
 // 显示完成信息
@@ -508,7 +529,7 @@ function restartLearning() {
     elements.answer.value = '';
     elements.todayCount.textContent = '0';
     elements.accuracy.textContent = '0';
-    elements.progressFill.style.width = '0%';
+    elements.progressBar.style.width = '0%';
     elements.result.textContent = '';
     elements.result.className = 'result';
     elements.next.style.display = 'none';
