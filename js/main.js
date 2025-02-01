@@ -389,6 +389,8 @@ async function showNextWord() {
         elements.answer.value = '';
         elements.answer.disabled = false;
         elements.result.textContent = '';
+        elements.result.className = 'result';  // 重置结果框的样式类
+        elements.result.style.display = 'none'; // 隐藏结果框
         elements.aiMemoryTip.style.display = 'none';  // 隐藏AI记忆提示
         elements.aiMemoryTip.textContent = '';        // 清空AI记忆提示内容
         elements.submit.style.display = 'flex';
@@ -472,23 +474,25 @@ async function checkAnswer() {
             const correctAnswer = currentMode === 'zh2latin' 
                 ? currentWord.latin
                 : currentWord.chinese.join(' 或 ');
+            elements.result.style.display = 'flex';  // 显示结果框
             elements.result.textContent = `正确答案是: ${correctAnswer}`;
+            elements.result.className = 'result incorrect';
             
-            // 如果是拉丁文到中文模式，获取AI记忆提示
-            if (currentMode === 'zh2latin') {
-                elements.aiMemoryTip.textContent = '正在生成记忆提示...';
-                elements.aiMemoryTip.style.display = 'block';
-                
-                try {
-                    const tip = await aiHelper.generateMemoryTip(currentWord, userAnswer);
-                    elements.aiMemoryTip.innerHTML = tip.replace(/\n/g, '<br>');
-                } catch (error) {
-                    console.error('获取AI提示时出错:', error);
-                    elements.aiMemoryTip.style.display = 'none';
-                }
+            // 所有模式下都显示AI记忆提示
+            elements.aiMemoryTip.textContent = '正在生成记忆提示...';
+            elements.aiMemoryTip.style.display = 'block';
+            
+            try {
+                const tip = await aiHelper.generateMemoryTip(currentWord, userAnswer);
+                elements.aiMemoryTip.innerHTML = tip.replace(/\n/g, '<br>');
+            } catch (error) {
+                console.error('获取AI提示时出错:', error);
+                elements.aiMemoryTip.style.display = 'none';
             }
         } else {
+            elements.result.style.display = 'flex';  // 显示结果框
             elements.result.textContent = '回答正确！';
+            elements.result.className = 'result correct';
         }
 
         // 更新记忆系统

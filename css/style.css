@@ -712,26 +712,42 @@ body {
 
 /* 结果区域 */
 .result {
-    padding: 15px;
-    border-radius: var(--border-radius);
-    margin: 20px 0;
-    font-size: 1.1em;
+    margin: 15px 0;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 15px;
+    line-height: 1.6;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 10px;
-    animation: fadeIn 0.3s ease-out;
-}
-
-.result.correct {
-    background: #e7fbd3;
-    color: var(--primary-color);
-    border-left: 4px solid var(--primary-color);
 }
 
 .result.incorrect {
-    background: #ffdfe0;
-    color: var(--error-color);
-    border-left: 4px solid var(--error-color);
+    background-color: #FFF2F2;
+    border-left: 4px solid #FF4D4F;
+    color: #333;
+}
+
+.result.incorrect::before {
+    content: "✕";
+    color: #FF4D4F;
+    font-weight: bold;
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.result.correct {
+    background-color: #F6FFED;
+    border-left: 4px solid #52C41A;
+    color: #333;
+}
+
+.result.correct::before {
+    content: "✓";
+    color: #52C41A;
+    font-weight: bold;
+    margin-right: 8px;
+    font-size: 16px;
 }
 
 /* 学习提示 */
