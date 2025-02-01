@@ -3,6 +3,7 @@ let totalWords = 0;
 let currentMode = sessionStorage.getItem('studyMode') || 'zh2latin'; // 初始化当前模式
 const csvParser = new CSVParser();
 const memorySystem = new MemorySystem();
+const aiHelper = new AIHelper();
 let currentWord = null;
 let currentProgress = 0;
 
@@ -16,6 +17,7 @@ let elements = {
     submit: document.getElementById('submit'),
     next: document.getElementById('next'),
     result: document.getElementById('result'),
+    aiMemoryTip: document.getElementById('aiMemoryTip'),
     todayCount: document.getElementById('todayCount'),
     accuracy: document.getElementById('accuracy'),
     progressBar: document.getElementById('progressBar')
@@ -27,7 +29,7 @@ function checkElements() {
     const requiredElements = [
         'importSection', 'quizSection', 'fileInput', 'question',
         'answer', 'submit', 'result', 'next', 'todayCount',
-        'accuracy', 'progressBar'
+        'accuracy', 'progressBar', 'aiMemoryTip'
     ];
     
     const missingElements = requiredElements.filter(id => !elements[id]);
@@ -50,7 +52,7 @@ async function initializeApp() {
     console.log('开始初始化应用...');
     
     // 检查必要的元素是否存在
-    const requiredElements = ['importSection', 'quizSection', 'fileInput', 'question', 'answer', 'submit', 'next', 'result'];
+    const requiredElements = ['importSection', 'quizSection', 'fileInput', 'question', 'answer', 'submit', 'next', 'result', 'aiMemoryTip'];
     const missingElements = requiredElements.filter(id => !elements[id]);
     
     if (missingElements.length > 0) {
@@ -257,6 +259,9 @@ function initializeSettings() {
                     // 清除本地存储
                     localStorage.clear();
                     
+                    // 清除AI提示缓存
+                    aiHelper.clearCache();
+                    
                     // 重置所有状态
                     csvParser.words = [];
                     memorySystem.words = [];
@@ -377,9 +382,19 @@ async function handleFileUpload(event) {
 
 // 显示下一个问题
 async function showNextWord() {
-    console.log('准备显示下一个单词...');
+    console.log('准备显示下一个问题...');
     
     try {
+        // 重置界面状态
+        elements.answer.value = '';
+        elements.answer.disabled = false;
+        elements.result.textContent = '';
+        elements.aiMemoryTip.style.display = 'none';  // 隐藏AI记忆提示
+        elements.aiMemoryTip.textContent = '';        // 清空AI记忆提示内容
+        elements.submit.style.display = 'flex';
+        elements.next.style.display = 'none';
+        elements.submit.disabled = true;
+        
         // 获取下一个单词
         currentWord = await memorySystem.getNextWord();
         console.log('获取到的下一个单词:', currentWord);
@@ -389,14 +404,6 @@ async function showNextWord() {
             showCompletionMessage();
             return;
         }
-
-        // 重置界面状态
-        elements.answer.value = '';
-        elements.answer.disabled = false;
-        elements.submit.style.display = 'flex';
-        elements.next.style.display = 'none';
-        elements.result.textContent = '';
-        elements.answer.focus();
 
         // 根据模式显示问题
         currentMode = currentMode || sessionStorage.getItem('studyMode') || 'zh2latin';
@@ -417,7 +424,7 @@ async function showNextWord() {
 }
 
 // 检查答案
-function checkAnswer() {
+async function checkAnswer() {
     console.log('开始检查答案...当前模式:', currentMode);
     
     try {
@@ -427,6 +434,9 @@ function checkAnswer() {
             alert('页面出现错误，请刷新重试');
             return;
         }
+
+        // 隐藏之前的AI提示（如果有）
+        elements.aiMemoryTip.style.display = 'none';
 
         // 检查是否有当前单词
         if (!currentWord) {
@@ -463,6 +473,20 @@ function checkAnswer() {
                 ? currentWord.latin
                 : currentWord.chinese.join(' 或 ');
             elements.result.textContent = `正确答案是: ${correctAnswer}`;
+            
+            // 如果是拉丁文到中文模式，获取AI记忆提示
+            if (currentMode === 'zh2latin') {
+                elements.aiMemoryTip.textContent = '正在生成记忆提示...';
+                elements.aiMemoryTip.style.display = 'block';
+                
+                try {
+                    const tip = await aiHelper.generateMemoryTip(currentWord, userAnswer);
+                    elements.aiMemoryTip.innerHTML = tip.replace(/\n/g, '<br>');
+                } catch (error) {
+                    console.error('获取AI提示时出错:', error);
+                    elements.aiMemoryTip.style.display = 'none';
+                }
+            }
         } else {
             elements.result.textContent = '回答正确！';
         }
@@ -540,35 +564,37 @@ function showCompletionMessage() {
 
 // 重新开始学习
 function restartLearning() {
-    // 重置当天的学习进度
-    memorySystem.resetTodayProgress();
+    console.log('重新开始学习...');
     
-    // 重置界面
-    elements.answer.value = '';
-    elements.todayCount.textContent = '0';
-    elements.accuracy.textContent = '0';
-    elements.progressBar.style.width = '0%';
-    elements.result.textContent = '';
-    elements.result.className = 'result';
-    elements.next.style.display = 'none';
-    
-    // 启用输入框和提交按钮
-    elements.answer.disabled = false;
-    elements.submit.disabled = false;
-    elements.answer.style.display = 'block';
-    elements.submit.style.display = 'block';
-    
-    // 淡出当前内容
-    elements.question.style.opacity = '0';
-    elements.answer.style.opacity = '0';
-    
-    // 300ms后显示新问题
-    setTimeout(() => {
-        showNextWord();
-        elements.question.style.opacity = '1';
-        elements.answer.style.opacity = '1';
-        elements.answer.focus(); // 自动聚焦到输入框
-    }, 300);
+    try {
+        // 清除本地存储
+        localStorage.clear();
+        
+        // 清除AI提示缓存
+        aiHelper.clearCache();
+        
+        // 重置内存中的数据
+        csvParser.words = [];
+        memorySystem.words = [];
+        currentWord = null;
+        
+        // 重置界面
+        elements.importSection.style.display = 'block';
+        elements.quizSection.style.display = 'none';
+        elements.answer.value = '';
+        elements.result.textContent = '';
+        elements.aiMemoryTip.style.display = 'none';
+        elements.aiMemoryTip.textContent = '';
+        elements.todayCount.textContent = '0';
+        elements.accuracy.textContent = '0';
+        elements.progressBar.style.width = '0%';
+        
+        console.log('数据已重置，可以重新开始学习');
+        
+    } catch (error) {
+        console.error('重置数据时出错:', error);
+        alert('重置数据时出错，请刷新页面重试');
+    }
 }
 
 // 在DOM加载完成后初始化应用
