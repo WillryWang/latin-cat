@@ -377,15 +377,15 @@ async function handleFileUpload(event) {
 
 // 显示下一个问题
 async function showNextWord() {
-    console.log('显示下一题...');
+    console.log('准备显示下一个单词...');
     
     try {
         // 获取下一个单词
-        currentWord = memorySystem.getNextWord();
+        currentWord = await memorySystem.getNextWord();
         console.log('获取到的下一个单词:', currentWord);
-
+        
         if (!currentWord) {
-            console.log('没有更多单词了，显示完成信息');
+            console.log('没有更多单词了');
             showCompletionMessage();
             return;
         }
@@ -393,21 +393,26 @@ async function showNextWord() {
         // 重置界面状态
         elements.answer.value = '';
         elements.answer.disabled = false;
-        elements.answer.focus();
         elements.submit.style.display = 'flex';
-        elements.submit.disabled = true; // 重置提交按钮为禁用状态
         elements.next.style.display = 'none';
-        elements.result.style.display = 'none';
+        elements.result.textContent = '';
+        elements.answer.focus();
 
-        // 显示问题
-        const questionText = currentMode === 'zh2latin' ? currentWord.chinese : currentWord.latin;
-        elements.question.textContent = questionText;
+        // 根据模式显示问题
+        currentMode = currentMode || sessionStorage.getItem('studyMode') || 'zh2latin';
+        if (currentMode === 'zh2latin') {
+            // 如果有多个中文名称，随机选择一个显示
+            const randomIndex = Math.floor(Math.random() * currentWord.chinese.length);
+            elements.question.textContent = currentWord.chinese[randomIndex];
+        } else {
+            elements.question.textContent = currentWord.latin;
+        }
         
-        console.log('问题显示完成:', questionText);
-
+        console.log('问题已显示');
+        
     } catch (error) {
-        console.error('显示下一题时出错:', error);
-        alert('加载下一题时出错，请刷新页面重试');
+        console.error('显示下一个单词时出错:', error);
+        alert('系统出现错误，请刷新页面重试');
     }
 }
 
@@ -440,14 +445,27 @@ function checkAnswer() {
             return;
         }
 
-        // 获取正确答案（确保currentMode已初始化）
+        // 获取正确答案并检查（确保currentMode已初始化）
         currentMode = currentMode || sessionStorage.getItem('studyMode') || 'zh2latin';
-        const correctAnswer = (currentMode === 'zh2latin' ? currentWord.latin : currentWord.chinese).toLowerCase();
-        console.log('正确答案:', correctAnswer);
-        
-        // 检查答案是否正确
-        const isCorrect = userAnswer === correctAnswer;
+        let isCorrect;
+        if (currentMode === 'zh2latin') {
+            const correctAnswer = currentWord.latin.toLowerCase();
+            isCorrect = userAnswer === correctAnswer;
+        } else {
+            // 中文答案可以是任何一个有效的中文名称
+            isCorrect = currentWord.chinese.some(name => name.toLowerCase() === userAnswer);
+        }
         console.log('答案是否正确:', isCorrect);
+
+        // 显示正确答案
+        if (!isCorrect) {
+            const correctAnswer = currentMode === 'zh2latin' 
+                ? currentWord.latin
+                : currentWord.chinese.join(' 或 ');
+            elements.result.textContent = `正确答案是: ${correctAnswer}`;
+        } else {
+            elements.result.textContent = '回答正确！';
+        }
 
         // 更新记忆系统
         memorySystem.updateWordStatus(currentWord, isCorrect);

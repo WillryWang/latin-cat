@@ -71,12 +71,13 @@ class CSVParser {
             }
             
             const parts = line.split(',').map(item => item.trim());
-            const chinese = parts[0];
+            // 支持多个中文名称，用分号分隔
+            const chineseNames = parts[0].split(';').map(name => name.trim());
             const latin = parts[1];
             
-            if (chinese && latin) {
+            if (chineseNames.length > 0 && latin) {
                 words.push({
-                    chinese: chinese,
+                    chinese: chineseNames,  // 现在chinese是一个数组
                     latin: latin,
                     lastReviewed: null,
                     reviewCount: 0,
