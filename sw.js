@@ -8,7 +8,8 @@ const urlsToCache = [
     './js/csvParser.js',
     './js/memory.js',
     './js/ai-helper.js',
-    './data/plants.csv',
+    './data/example.csv',
+    './data/sample.csv',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css'
 ];
 
