@@ -24,6 +24,22 @@ let elements = {
     studyModeTitle: document.getElementById('studyModeTitle')
 };
 
+// 设置相关的DOM元素
+let settingsElements = {
+    settingsBtn: document.getElementById('settingsBtn'),
+    settingsMenu: document.getElementById('settingsMenu'),
+    importNewBtn: document.getElementById('importNewBtn'),
+    resetDataBtn: document.getElementById('resetDataBtn'),
+    endLearningBtn: document.getElementById('endLearningBtn'),
+    confirmDialog: document.getElementById('confirmDialog'),
+    endLearningDialog: document.getElementById('endLearningDialog'),
+    overlay: document.getElementById('overlay'),
+    cancelReset: document.getElementById('cancelReset'),
+    confirmReset: document.getElementById('confirmReset'),
+    cancelEndLearning: document.getElementById('cancelEndLearning'),
+    confirmEndLearning: document.getElementById('confirmEndLearning')
+};
+
 // 检查所有必要的 DOM 元素是否存在
 function checkElements() {
     console.log('检查 DOM 元素...');
@@ -161,22 +177,6 @@ async function initializeApp() {
 function initializeSettings() {
     console.log('初始化设置功能...');
     
-    // 获取所有需要的 DOM 元素
-    const settingsElements = {
-        settingsBtn: document.getElementById('settingsBtn'),
-        settingsMenu: document.getElementById('settingsMenu'),
-        importNewBtn: document.getElementById('importNewBtn'),
-        resetDataBtn: document.getElementById('resetDataBtn'),
-        endLearningBtn: document.getElementById('endLearningBtn'),
-        confirmDialog: document.getElementById('confirmDialog'),
-        endLearningDialog: document.getElementById('endLearningDialog'),
-        overlay: document.getElementById('overlay'),
-        cancelReset: document.getElementById('cancelReset'),
-        confirmReset: document.getElementById('confirmReset'),
-        cancelEndLearning: document.getElementById('cancelEndLearning'),
-        confirmEndLearning: document.getElementById('confirmEndLearning')
-    };
-
     // 检查必要的元素是否存在
     const requiredElements = ['settingsBtn', 'settingsMenu'];
     const missingElements = requiredElements.filter(id => !settingsElements[id]);
