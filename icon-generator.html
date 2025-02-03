@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Icon Generator</title>
+</head>
+<body>
+    <div id="canvasContainer"></div>
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        
+        function generateIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // 背景
+            ctx.fillStyle = '#4CAF50';
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 内圆
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2.2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 猫耳朵
+            ctx.fillStyle = '#4CAF50';
+            // 左耳
+            ctx.beginPath();
+            ctx.moveTo(size*0.3, size*0.3);
+            ctx.lineTo(size*0.4, size*0.15);
+            ctx.lineTo(size*0.5, size*0.3);
+            ctx.fill();
+            // 右耳
+            ctx.beginPath();
+            ctx.moveTo(size*0.5, size*0.3);
+            ctx.lineTo(size*0.6, size*0.15);
+            ctx.lineTo(size*0.7, size*0.3);
+            ctx.fill();
+            
+            // 文字
+            ctx.fillStyle = '#4CAF50';
+            ctx.font = `${size/4}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Ln', size/2, size*0.6);
+            
+            return canvas.toDataURL();
+        }
+        
+        // 生成所有尺寸的图标
+        sizes.forEach(size => {
+            const dataUrl = generateIcon(size);
+            const img = document.createElement('img');
+            img.src = dataUrl;
+            img.title = `${size}x${size}`;
+            document.body.appendChild(img);
+            
+            // 创建下载链接
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = `icon-${size}x${size}.png`;
+            link.textContent = `Download ${size}x${size}`;
+            link.style.display = 'block';
+            document.body.appendChild(link);
+        });
+    </script>
+</body>
+</html>

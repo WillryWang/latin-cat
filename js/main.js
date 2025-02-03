@@ -20,7 +20,8 @@ let elements = {
     aiMemoryTip: document.getElementById('aiMemoryTip'),
     todayCount: document.getElementById('todayCount'),
     accuracy: document.getElementById('accuracy'),
-    progressBar: document.getElementById('progressBar')
+    progressBar: document.getElementById('progressBar'),
+    studyModeTitle: document.getElementById('studyModeTitle')
 };
 
 // 检查所有必要的 DOM 元素是否存在
@@ -29,7 +30,7 @@ function checkElements() {
     const requiredElements = [
         'importSection', 'quizSection', 'fileInput', 'question',
         'answer', 'submit', 'result', 'next', 'todayCount',
-        'accuracy', 'progressBar', 'aiMemoryTip'
+        'accuracy', 'progressBar', 'aiMemoryTip', 'studyModeTitle'
     ];
     
     const missingElements = requiredElements.filter(id => !elements[id]);
@@ -52,7 +53,7 @@ async function initializeApp() {
     console.log('开始初始化应用...');
     
     // 检查必要的元素是否存在
-    const requiredElements = ['importSection', 'quizSection', 'fileInput', 'question', 'answer', 'submit', 'next', 'result', 'aiMemoryTip'];
+    const requiredElements = ['importSection', 'quizSection', 'fileInput', 'question', 'answer', 'submit', 'next', 'result', 'aiMemoryTip', 'studyModeTitle'];
     const missingElements = requiredElements.filter(id => !elements[id]);
     
     if (missingElements.length > 0) {
@@ -61,6 +62,9 @@ async function initializeApp() {
     }
 
     console.log('DOM 元素检查完成，开始初始化功能...');
+
+    // 更新学习模式标题
+    updateStudyModeTitle();
 
     // 初始化设置功能
     initializeSettings();
@@ -391,7 +395,7 @@ async function showNextWord() {
         elements.result.textContent = '';
         elements.result.className = 'result';  // 重置结果框的样式类
         elements.result.style.display = 'none'; // 隐藏结果框
-        elements.aiMemoryTip.style.display = 'none';  // 隐藏AI记忆提示
+        elements.aiMemoryTip.classList.remove('show');  // 隐藏AI记忆提示
         elements.aiMemoryTip.textContent = '';        // 清空AI记忆提示内容
         elements.submit.style.display = 'flex';
         elements.next.style.display = 'none';
@@ -438,7 +442,7 @@ async function checkAnswer() {
         }
 
         // 隐藏之前的AI提示（如果有）
-        elements.aiMemoryTip.style.display = 'none';
+        elements.aiMemoryTip.classList.remove('show');
 
         // 检查是否有当前单词
         if (!currentWord) {
@@ -480,14 +484,14 @@ async function checkAnswer() {
             
             // 所有模式下都显示AI记忆提示
             elements.aiMemoryTip.textContent = '正在生成记忆提示...';
-            elements.aiMemoryTip.style.display = 'block';
+            elements.aiMemoryTip.classList.add('show');
             
             try {
                 const tip = await aiHelper.generateMemoryTip(currentWord, userAnswer);
                 elements.aiMemoryTip.innerHTML = tip.replace(/\n/g, '<br>');
             } catch (error) {
                 console.error('获取AI提示时出错:', error);
-                elements.aiMemoryTip.style.display = 'none';
+                elements.aiMemoryTip.classList.remove('show');
             }
         } else {
             elements.result.style.display = 'flex';  // 显示结果框
@@ -587,7 +591,7 @@ function restartLearning() {
         elements.quizSection.style.display = 'none';
         elements.answer.value = '';
         elements.result.textContent = '';
-        elements.aiMemoryTip.style.display = 'none';
+        elements.aiMemoryTip.classList.remove('show');
         elements.aiMemoryTip.textContent = '';
         elements.todayCount.textContent = '0';
         elements.accuracy.textContent = '0';
@@ -598,6 +602,15 @@ function restartLearning() {
     } catch (error) {
         console.error('重置数据时出错:', error);
         alert('重置数据时出错，请刷新页面重试');
+    }
+}
+
+// 更新学习模式标题
+function updateStudyModeTitle() {
+    const currentMode = sessionStorage.getItem('studyMode') || 'zh2latin';
+    const titleElement = document.getElementById('studyModeTitle');
+    if (titleElement) {
+        titleElement.textContent = currentMode === 'zh2latin' ? '中文 → 拉丁文' : '拉丁文 → 中文';
     }
 }
 

@@ -3,92 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="description" content="植物拉丁文单词速记应用">
     <title>Latin Cat - 学习</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- 顶部导航栏 -->
-        <div class="top-nav">
-            <a href="index.html" class="back-btn">
-                <i class="fas fa-arrow-left"></i>
-                返回首页
+    <div class="container">
+        <header class="header">
+            <a href="index.html" class="back-button">
+                <i class="fas fa-angle-left"></i>
             </a>
-            <div class="mode-title" id="modeTitle"></div>
-            <button id="settingsBtn" class="settings-btn">
-                <i class="fas fa-cog"></i>
-            </button>
-        </div>
+            <h1 class="study-mode-title" id="studyModeTitle"></h1>
+            <div class="settings-container">
+                <button id="settingsBtn" class="settings-button">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <div class="settings-menu" id="settingsMenu">
+                    <button id="importNewBtn">
+                        <i class="fas fa-file-import"></i>
+                        导入新词库
+                    </button>
+                    <button id="resetDataBtn">
+                        <i class="fas fa-trash-alt"></i>
+                        重置数据
+                    </button>
+                    <button id="endLearningBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        结束学习
+                    </button>
+                </div>
+            </div>
+        </header>
 
-        <!-- 顶部进度条 -->
         <div class="progress-bar study-progress">
             <div class="progress-fill" id="progressBar"></div>
         </div>
 
-        <!-- 导入区域 -->
-        <div class="import-section" id="importSection">
-            <div class="welcome-card">
-                <h1>请先导入植物拉丁文词库</h1>
-                <div class="file-upload-area">
-                    <input type="file" id="csvFile" accept=".csv" class="file-input">
-                    <label for="csvFile" class="file-label">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <span>选择CSV文件</span>
-                    </label>
-                    <p class="hint">请上传CSV格式的词库文件，每行包含：中文名称,拉丁文名称</p>
-                    <p class="hint">示例：薰衣草,Lavandula angustifolia</p>
-                </div>
+        <div class="stats">
+            <div class="stat-item">
+                <i class="fas fa-check-circle"></i>
+                <span>今日完成: </span>
+                <span id="todayCount" class="completed-count">0</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-star"></i>
+                <span>正确率: </span>
+                <span id="accuracy" class="accuracy-rate">0%</span>
             </div>
         </div>
 
-        <!-- 答题区域 -->
-        <div class="quiz-section" id="quizSection" style="display: none;">
-            <!-- 顶部信息栏 -->
-            <div class="stats">
-                <div class="stat-item">
-                    <i class="fas fa-check-circle"></i>
-                    <span>今日完成：<span id="todayCount">0</span></span>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-star"></i>
-                    <span>正确率：<span id="accuracy">0</span>%</span>
+        <div class="content-area">
+            <div class="import-section" id="importSection">
+                <div class="welcome-card">
+                    <h1>请先导入植物拉丁文词库</h1>
+                    <div class="file-upload-area">
+                        <input type="file" id="csvFile" accept=".csv" class="file-input">
+                        <label for="csvFile" class="file-label">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>选择CSV文件</span>
+                        </label>
+                        <p class="hint">请上传CSV格式的词库文件，每行包含：中文名称,拉丁文名称</p>
+                        <p class="hint">示例：薰衣草,Lavandula angustifolia</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- 问题卡片 -->
-            <div class="question-card">
-                <p id="question" class="question-text"></p>
-                <div class="answer-area">
+            <div class="quiz-section" id="quizSection" style="display: none;">
+                <div class="word-display">
+                    <p id="question" class="question-text"></p>
+                </div>
+                
+                <div class="input-area">
                     <input type="text" id="answer" class="answer-input" placeholder="请输入答案" autocomplete="off">
                     <button id="submit" class="submit-btn">
                         <i class="fas fa-check"></i>
                         提交
                     </button>
+                    <button id="next" class="next-btn" style="display: none;">
+                        <i class="fas fa-arrow-right"></i>
+                        下一题
+                    </button>
                 </div>
-                <div id="result" class="result"></div>
-                <div id="aiMemoryTip" class="ai-memory-tip" style="display: none;"></div>
-                <button id="next" class="next-btn" style="display: none;">
-                    <i class="fas fa-arrow-right"></i>
-                    下一题
-                </button>
-            </div>
-        </div>
 
-        <!-- 设置菜单 -->
-        <div class="settings-menu" id="settingsMenu">
-            <button id="importNewBtn" class="settings-btn">
-                <i class="fas fa-file-import"></i>
-                导入新词库
-            </button>
-            <button id="resetDataBtn" class="settings-btn">
-                <i class="fas fa-trash-alt"></i>
-                重置数据
-            </button>
-            <button id="endLearningBtn" class="settings-btn">
-                <i class="fas fa-sign-out-alt"></i>
-                结束学习
-            </button>
+                <div id="result" class="result"></div>
+                <div id="aiMemoryTip" class="ai-memory-tip"></div>
+            </div>
         </div>
 
         <!-- 确认对话框 -->
@@ -119,5 +124,18 @@
     <script src="js/memory.js"></script>
     <script src="js/ai-helper.js"></script>
     <script src="js/main.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker 注册成功:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker 注册失败:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
